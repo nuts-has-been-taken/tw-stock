@@ -6,12 +6,24 @@ import json
 
 BASE_YAHOO_URL = "https://tw.stock.yahoo.com"
 
+def get_all_stock_without_class():
+    pass
+
+def get_stocks_by_class():
+    pass
+
 def save_record(json_records:json, name:str):
+
+    """將 yahoo股市 爬取到的類股資料存進 json 檔"""
+
     with open(f'../json_file/{name}.json', 'w', encoding='utf-8') as json_file:
         json.dump(json_records, json_file, indent=4, ensure_ascii=False)
     return
 
 def get_from_class(url:str):
+
+    """爬取該種類的所有股票名稱和編號"""
+
     class_number = []
     class_info = {}
     class_stok_info = requests.get(f"{BASE_YAHOO_URL}{url}")
@@ -29,6 +41,8 @@ def get_from_class(url:str):
     return class_number, class_info
 
 def class_crawler():
+
+    """爬取所有類股資料"""
 
     json_records = {}
 
