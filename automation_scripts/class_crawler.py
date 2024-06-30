@@ -2,10 +2,12 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
+"""這是用來爬取目前台股的所有股票(無興櫃)，資料來源為 yahoo股市"""
+
 BASE_YAHOO_URL = "https://tw.stock.yahoo.com"
 
 def save_record(json_records:json, name:str):
-    with open(f'./json_file/{name}.json', 'w', encoding='utf-8') as json_file:
+    with open(f'../json_file/{name}.json', 'w', encoding='utf-8') as json_file:
         json.dump(json_records, json_file, indent=4, ensure_ascii=False)
     return
 
