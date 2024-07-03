@@ -1,16 +1,69 @@
+from typing import Optional
 from bs4 import BeautifulSoup
 import requests
 import json
+import os
 
 """這是用來爬取目前台股的所有股票(無興櫃)，資料來源為 yahoo股市"""
+# TODO : yahoo股市沒有提供興櫃的股票分類和代號，但是 yfinance 爬的到，需要去其他地方抓
 
 BASE_YAHOO_URL = "https://tw.stock.yahoo.com"
+TW_STOCK_CLASS_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../json_file/TW_stock_list.json" 
 
-def get_all_stock_without_class():
-    pass
+def load_TW_stock_json():
+    try:
+        with open(TW_STOCK_CLASS_PATH, 'r') as file:
+            tw_data = json.load(file)
+    except Exception as e:
+        print(f"Error msg : {e}")
+        print("Please make sure you have download the TW_stock_list.json first, it should be in the json_file folder !")
+        return None
+    return tw_data
 
-def get_stocks_by_class():
-    pass
+def get_all_stock_without_class() -> Optional[list]:
+
+    """Return list of all TW stock"""
+
+    tw_data = load_TW_stock_json()
+    
+    all_stock = []
+    for type_class in list(tw_data.keys()):
+        listed_stock = tw_data[type_class]
+        for class_ in list(listed_stock.keys()):
+            if class_ != "分類":
+                all_stock.extend(listed_stock[class_]["class_stock_number"])
+    all_stock = list(set(all_stock))
+    return all_stock
+
+def get_stocks_by_class(class_name:str) -> dict[str:list]:
+
+    """
+    Return stocks in the class
+
+    Examples : 
+    ```
+        print(get_stocks_by_class(class_name="食品"))
+        {
+            "食品" : ["1201.TW", "1203.TW", ...],
+            "櫃食品" : ["1264.TWO", "1796.TWO", ...],
+        }
+        print(get_stocks_by_class(class_name="Apple"))
+        {
+            "Apple Pay" : [...],
+            "Apple watch" : [...],
+            "Apple iTV" : [...],
+        }
+    ```
+    """
+    filter_stock = {}
+    tw_data = load_TW_stock_json()
+
+    for type_class in list(tw_data.keys()):
+        listed_stock = tw_data[type_class]
+        for class_ in listed_stock["分類"]:
+            if class_name in class_:
+                filter_stock[class_] = listed_stock[class_]["class_stock_number"]
+    return filter_stock
 
 def save_record(json_records:json, name:str):
 
@@ -74,6 +127,7 @@ def class_crawler():
     otc_stock_json = {}
     otc_stock = soup.find("div", id="OVER_THE_COUNTER_STOCK").find("ul").find_all("a")
     for class_stock in otc_stock:
+        class_name = class_stock.text
         otc_stock_class.append(class_stock.text)
 
         # get all stock in the class
@@ -91,6 +145,7 @@ def class_crawler():
     electric_stock_json = {}
     electric_stock = soup.find("div", id="ELECTRONICS_INDUSTRY").find("ul").find_all("a")
     for class_stock in electric_stock:
+        class_name = class_stock.text
         electric_stock_class.append(class_stock.text)
 
         # get all stock in the class
@@ -108,6 +163,7 @@ def class_crawler():
     concept_stock_json = {}
     concept_stock = soup.find("div", id="CONCEPT_STOCK").find("ul").find_all("a")
     for class_stock in concept_stock:
+        class_name = class_stock.text
         concept_stock_class.append(class_stock.text)
 
         # get all stock in the class
@@ -125,6 +181,7 @@ def class_crawler():
     consortium_stock_json = {}
     consortium_stock = soup.find("div", id="CONSORTIUM_STOCK").find("ul").find_all("a")
     for class_stock in consortium_stock:
+        class_name = class_stock.text
         consortium_stock_class.append(class_stock.text)
 
         # get all stock in the class
@@ -135,7 +192,7 @@ def class_crawler():
         }
         consortium_stock_json[class_name] = class_stock_json
     consortium_stock_json["分類"] = consortium_stock_class
-    json_records["概念股"] = consortium_stock_json
+    json_records["集團股"] = consortium_stock_json
 
     # save record
     save_record(json_records, "TW_stock_list")
