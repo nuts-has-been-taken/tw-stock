@@ -5,14 +5,12 @@ import json
 import os
 
 """這是用來爬取目前台股的所有股票(無興櫃)，資料來源為 yahoo股市"""
+# TODO : yahoo股市沒有提供興櫃的股票分類和代號，但是 yfinance 爬的到，需要去其他地方抓
 
 BASE_YAHOO_URL = "https://tw.stock.yahoo.com"
 TW_STOCK_CLASS_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../json_file/TW_stock_list.json" 
 
-def get_all_stock_without_class() -> Optional[list]:
-
-    """Return list of all TW stock"""
-
+def load_TW_stock_json():
     try:
         with open(TW_STOCK_CLASS_PATH, 'r') as file:
             tw_data = json.load(file)
@@ -20,6 +18,13 @@ def get_all_stock_without_class() -> Optional[list]:
         print(f"Error msg : {e}")
         print("Please make sure you have download the TW_stock_list.json first, it should be in the json_file folder !")
         return None
+    return tw_data
+
+def get_all_stock_without_class() -> Optional[list]:
+
+    """Return list of all TW stock"""
+
+    tw_data = load_TW_stock_json()
     
     all_stock = []
     for type_class in list(tw_data.keys()):
@@ -27,13 +32,38 @@ def get_all_stock_without_class() -> Optional[list]:
         for class_ in list(listed_stock.keys()):
             if class_ != "分類":
                 all_stock.extend(listed_stock[class_]["class_stock_number"])
-    print(len(all_stock))
     all_stock = list(set(all_stock))
-    print(len(all_stock))
     return all_stock
 
-def get_stocks_by_class():
-    pass
+def get_stocks_by_class(class_name:str) -> dict[str:list]:
+
+    """
+    Return stocks in the class
+
+    Examples : 
+    ```
+        print(get_stocks_by_class(class_name="食品"))
+        {
+            "食品" : ["1201.TW", "1203.TW", ...],
+            "櫃食品" : ["1264.TWO", "1796.TWO", ...],
+        }
+        print(get_stocks_by_class(class_name="Apple"))
+        {
+            "Apple Pay" : [...],
+            "Apple watch" : [...],
+            "Apple iTV" : [...],
+        }
+    ```
+    """
+    filter_stock = {}
+    tw_data = load_TW_stock_json()
+
+    for type_class in list(tw_data.keys()):
+        listed_stock = tw_data[type_class]
+        for class_ in listed_stock["分類"]:
+            if class_name in class_:
+                filter_stock[class_] = listed_stock[class_]["class_stock_number"]
+    return filter_stock
 
 def save_record(json_records:json, name:str):
 
