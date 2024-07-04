@@ -8,7 +8,7 @@ import os
 # TODO : yahoo股市沒有提供興櫃的股票分類和代號，但是 yfinance 爬的到，需要去其他地方抓
 
 BASE_YAHOO_URL = "https://tw.stock.yahoo.com"
-TW_STOCK_CLASS_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../json_file/TW_stock_list.json" 
+TW_STOCK_CLASS_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../data/tw_stock_list/TW_stock_list.json" 
 
 def load_TW_stock_json():
     try:

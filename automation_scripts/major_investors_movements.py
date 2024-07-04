@@ -5,7 +5,7 @@ import requests
 import os
 
 """用來取得法人買賣資料"""
-TW_STOCK_CSV_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../mi_movements_csv" 
+TW_STOCK_CSV_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../data/mi_movements_csv" 
 
 def get_mi_movement_from_twse(start_date:str, end_date:str, stock_code:list[str]) -> dict[str:pd.DataFrame]:
 
