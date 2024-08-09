@@ -5,7 +5,7 @@ import requests
 import os
 
 """用來取得法人買賣資料"""
-TW_STOCK_CSV_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../mi_movements_csv" 
+TW_STOCK_CSV_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../data/mi_movements_csv" 
 
 def get_mi_movement_from_twse(start_date:str, end_date:str, stock_code:list[str]) -> dict[str:pd.DataFrame]:
 
@@ -67,6 +67,8 @@ def save_mi_movement_to_csv(df_dict:dict[str:pd.DataFrame]) -> None:
     stock_code = list(df_dict.keys())
     for code in stock_code:
         if not df_dict[code].empty:
+            df_dict[code]["日期"] = pd.to_datetime(df_dict[code]["日期"])
+            df_dict[code].sort_index(inplace=True)
             df_dict[code].to_csv(f"{TW_STOCK_CSV_PATH}/{code}_mi_movement.csv", encoding="utf-8", index=False)
             print(f"Save to : {TW_STOCK_CSV_PATH}/{code}_mi_movement.csv")
     return
@@ -98,7 +100,7 @@ def read_mi_movements_from_csv(code:str, start_date:str, end_date:str) -> pd.Dat
 
 if __name__ == "__main__":
     start_date = "2018-01-02"
-    end_date = "2024-06-26"
+    end_date = "2024-07-04"
     all_stock = get_all_stock_without_class()
     for i in range(len(all_stock)):
         all_stock[i] = all_stock[i].split(".")[0]
