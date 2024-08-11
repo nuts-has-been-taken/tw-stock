@@ -2,6 +2,7 @@ from matplotlib.ticker import FuncFormatter
 from datetime import datetime, timedelta
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -11,8 +12,12 @@ import os
 
 def send_line_notify(msg:str, token:str, img=None):
     url = "https://notify-api.line.me/api/notify"
-    headers = {"Authorization": "Bearer " + token}
+    headers = {"Authorization": f"Bearer {token}"}
     payload = {"message": msg}
+    if img:
+        files = {'imageFile': open(img, 'rb')}
+        r = requests.post(url, headers=headers, params=payload, files=files)
+        return
     r = requests.post(url, headers=headers, params=payload)
     return
 
@@ -39,7 +44,7 @@ def get_today_major_investors(date:datetime):
     
     return res
 
-def create_major_investors_jpg(df:pd.DataFrame):
+def create_major_investors_jpg(df:pd.DataFrame, file_path='plot.png'):
     
     # 調整字形
     font_path = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'
@@ -59,7 +64,7 @@ def create_major_investors_jpg(df:pd.DataFrame):
             return int(value)
         return f'{int(value/100000000)} (億)'
 
-    fig, ax1 = plt.subplots(figsize=(8, 4))
+    fig, ax1 = plt.subplots(figsize=(10, 6))
 
     bar_width = 0.5
     index = np.arange(len(dates))
@@ -81,8 +86,8 @@ def create_major_investors_jpg(df:pd.DataFrame):
 
     ax1.axhline(0, color='black', linewidth=0.8, linestyle='-')
     ax1.grid(axis='y', linestyle='--', linewidth=0.7)
-    ax1.set_xticks(index)
-    ax1.set_xticklabels(dates.strftime('%Y-%m-%d'))
+    ax1.set_xticks(index[::int(len(dates)/6)])
+    ax1.set_xticklabels(dates[::int(len(dates)/6)].strftime('%Y-%m-%d'))
     ax1.set_xlabel('日期', rotation=0, labelpad=12)
     handles = [bar1, bar2, bar3]
     ax1.legend(handles=handles)
@@ -95,9 +100,9 @@ def create_major_investors_jpg(df:pd.DataFrame):
     ax2.legend(loc='lower right')
 
     plt.title('每日各投資方買賣超金額及成交量')
-    plt.savefig('plot.png')
+    plt.savefig(file_path)
     
-def send_major_investors_report():
+def send_major_investors_report(data_number=7):
     
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     trading_data = pd.DataFrame()
@@ -106,18 +111,32 @@ def send_major_investors_report():
     trading_data['投信'] = None
     trading_data['自營商'] = None
     trading_data['合計'] = None
-    data_number = 7 # 蒐集的資料筆數
     
     # 抓取近期法人資訊
     while len(trading_data)<data_number:
         today_data = get_today_major_investors(today)
         if today_data:
             trading_data.loc[len(trading_data)] = today_data
+        elif len(trading_data)==0: # 如果當天沒盤加上目前 df 是空的代表那天很有可能放假因此不傳
+            return
         today -= timedelta(days=1)
     
     # 創建圖片
-    create_major_investors_jpg(trading_data)
+    file_path='plot.png'
+    create_major_investors_jpg(trading_data, file_path)
     
     # Line 發送通知
+    msg = f"""{trading_data.index[0].strftime('%Y-%m-%d')}
+外資：{(trading_data.loc[trading_data.index[0], '外資']/100000000):.1f} 億
+投信：{(trading_data.loc[trading_data.index[0], '投信']/100000000):.1f} 億
+自營商：{(trading_data.loc[trading_data.index[0], '自營商']/100000000):.1f} 億"""
+    load_dotenv()
+    send_line_notify(msg=msg, token=os.getenv("LINE_MAJOR_INVESTORS_REPORT"), img='plot.png')
+    
+    # 刪除圖片
+    if os.path.exists(file_path):
+        os.remove(file_path)
     return
 
+if __name__ == "__main__":
+    send_major_investors_report(data_number=20)
