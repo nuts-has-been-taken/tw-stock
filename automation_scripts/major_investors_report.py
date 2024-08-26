@@ -127,6 +127,7 @@ def send_major_investors_report(data_number=7):
     
     # Line 發送通知
     msg = f"""{trading_data.index[0].strftime('%Y-%m-%d')}
+三大法人買賣超變化
 外資：{(trading_data.loc[trading_data.index[0], '外資']/100000000):.1f} 億
 投信：{(trading_data.loc[trading_data.index[0], '投信']/100000000):.1f} 億
 自營商：{(trading_data.loc[trading_data.index[0], '自營商']/100000000):.1f} 億"""
