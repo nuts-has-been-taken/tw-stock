@@ -45,18 +45,16 @@ def create_margin_jpg(df:pd.DataFrame, file_path='plot.png'):
     prop = fm.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = prop.get_name()
     plt.rcParams['axes.unicode_minus'] = False
-    df = df.copy()
     # 處理表格
     df.set_index('日期', inplace=True)
     df = df.sort_index()
-    tw = yf.download('^TWII', start=df.index[0], end=(df.index[len(df)-1]+timedelta(days=1)).strftime('%Y-%m-%d'))
     dates = df.index
     
     # 畫圖
     def format_func(value, tick_number):
         if value == 0:
             return int(value)
-        return f'int{value} (億)'
+        return f'{int(value)} (億)'
 
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
