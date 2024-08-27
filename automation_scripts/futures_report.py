@@ -39,9 +39,9 @@ def get_futures(date:datetime):
         content = content.find_all("tr")
         res = {
             "日期":date,
-            "自營商":eval(content[0].find_all("td", align="right")[11].text.strip().replace(',', '')),
-            "投信":eval(content[1].find_all("td", align="right")[11].text.strip().replace(',', '')),
-            "外資":eval(content[2].find_all("td", align="right")[11].text.strip().replace(',', '')),
+            "自營商":eval(content[0].find_all("td", align="right")[10].text.strip().replace(',', '')),
+            "投信":eval(content[1].find_all("td", align="right")[10].text.strip().replace(',', '')),
+            "外資":eval(content[2].find_all("td", align="right")[10].text.strip().replace(',', '')),
         }
     else:
         return None
@@ -65,7 +65,7 @@ def create_futures_jpg(df:pd.DataFrame, file_path='plot.png'):
     def format_func(value, tick_number):
         if value == 0:
             return int(value)
-        return f'{int(value/100000000)} (億)'
+        return f'{int(value/10000)} 萬'
 
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
@@ -97,7 +97,7 @@ def create_futures_jpg(df:pd.DataFrame, file_path='plot.png'):
 
     ax1.yaxis.set_major_formatter(FuncFormatter(format_func))
 
-    plt.title('三大法人期貨未平倉')
+    plt.title('三大法人期貨未平倉口數')
     plt.savefig(file_path)
     
 def send_futures_report(data_number=7):
@@ -124,10 +124,10 @@ def send_futures_report(data_number=7):
     
     # Line 發送通知
     msg = f"""{trading_data.index[0].strftime('%Y-%m-%d')}
-三大法人期貨未平倉
-外資：{(trading_data.loc[trading_data.index[0], '外資']/100000000):.3f} 億
-投信：{(trading_data.loc[trading_data.index[0], '投信']/100000000):.3f} 億
-自營商：{(trading_data.loc[trading_data.index[0], '自營商']/10000):.1f} 萬"""
+三大法人期貨未平倉口數
+外資：{(trading_data.loc[trading_data.index[0], '外資'])}
+投信：{(trading_data.loc[trading_data.index[0], '投信'])}
+自營商：{(trading_data.loc[trading_data.index[0], '自營商'])}"""
     load_dotenv()
     send_line_notify(msg=msg, token=os.getenv("LINE_MAJOR_INVESTORS_REPORT"), img=file_path)
     
