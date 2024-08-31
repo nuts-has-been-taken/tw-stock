@@ -110,12 +110,12 @@ def send_futures_report(data_number=7):
     trading_data['外資'] = None
 
     # 抓取近期融資餘額資訊
-    while len(trading_data)<20:
+    while len(trading_data)<data_number:
         today_data = get_futures(today)
         if today_data:
             trading_data.loc[len(trading_data)] = today_data
         elif len(trading_data)==0:
-            pass
+            return
         today -= timedelta(days=1)
     
     # 創建圖片
