@@ -9,6 +9,7 @@
 ### ✅已經完成的主題
 
 - `major_investors_movements` : 研究三大法人的累計買賣超對股價的影響
+- `JPY_interest` : 日本利率與全球關係研究
 
 ### 📝尚未研究的主題
 
