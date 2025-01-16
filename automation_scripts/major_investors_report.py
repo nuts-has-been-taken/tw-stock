@@ -23,7 +23,7 @@ def send_line_notify(msg:str, token:str, img=None):
 
 def get_today_major_investors(date:datetime):
     
-    url = "https://www.twse.com.tw/pcversion/zh/fund/BFI82U"
+    url = "https://www.twse.com.tw/rwd/zh/fund/BFI82U"
     body = {
         'response': 'json',
         'dayDate': date.strftime('%Y%m%d'),
