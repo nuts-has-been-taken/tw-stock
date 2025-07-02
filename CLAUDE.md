@@ -38,6 +38,8 @@ git commit -m ":memo: Update experiment documentation"
 - **Language**: Python with data science libraries
 - **Data Sources**: Yahoo Finance (yfinance), Taiwan Stock Exchange (TWSE) APIs
 - **Research Workflow**: Data Collection → Preprocessing → Analysis → Visualization → Correlation Analysis
+- **Modular Structure**: Reusable components with standardized interfaces
+- **Industry-Specific Analysis**: Customized financial scoring for 13 Taiwan industry sectors
 
 ### Key Components
 
@@ -50,13 +52,28 @@ git commit -m ":memo: Update experiment documentation"
 - `beautifulsoup4` + `selenium` - Web scraping for news analysis
 - `transformers` - NLP models for sentiment analysis
 
-#### Directory Structure
+#### Enhanced Directory Structure
 ```
-stock_experiment/          # Research notebooks directory
-├── major_investors_movements.ipynb  # ✅ Completed: Institutional investor analysis
-├── JPY_interest.ipynb              # ✅ Completed: JPY interest rate research  
-├── finance_news.ipynb              # 🚧 In progress: News sentiment analysis
-└── unemployment_rate.ipynb         # 🚧 Cancelled: Unemployment analysis
+tw-stock/
+├── stock_experiment/          # Research notebooks directory
+│   ├── major_investors_movements.ipynb  # ✅ Completed: Institutional investor analysis
+│   ├── JPY_interest.ipynb              # ✅ Completed: JPY interest rate research  
+│   ├── company_health_analysis.ipynb   # ✅ Completed: Financial health scoring
+│   ├── finance_news.ipynb              # 🚧 In progress: News sentiment analysis
+│   ├── unemployment_rate.ipynb         # ❌ Cancelled: Unemployment analysis
+│   └── company_health_analysis/        # Financial scoring system
+│       ├── taiwan_industry_scorer.py    # Industry-specific scoring engine
+│       ├── taiwan_industry_scoring_standards.json  # Scoring configurations
+│       └── README_taiwan_scorer.md      # Scoring system documentation
+│
+├── research_preprocessing/    # Data preprocessing tools
+│   ├── yfinance_data_preprocessing/     # yfinance tools and analysis
+│   │   ├── yfinance_taiwan_analysis.ipynb    # Deep analysis notebook
+│   │   ├── yfinance_complete_analysis.py     # Complete analysis module
+│   │   ├── test_taiwan_stocks.py             # Quick testing script
+│   │   └── YFINANCE_ANALYSIS_SUMMARY.md      # Analysis summary report
+│   └── README.md
+└── README.md                  # Enhanced project documentation
 ```
 
 ### Data Architecture Patterns
@@ -71,8 +88,20 @@ stock_experiment/          # Research notebooks directory
 - `save_mi_movement_to_csv(df_dict)` - Saves data to CSV for future use
 - `read_mi_movement_from_csv(file_path, start_date, end_date)` - Reads cached data
 
+#### Financial Health Scoring System
+- `TaiwanIndustryScorer` - Industry-specific financial health scoring class
+- `calculate_industry_score(metrics, yfinance_sector)` - Calculates weighted health scores
+- `get_industry_info(taiwan_industry)` - Retrieves industry-specific configurations
+- `score_metric(value, metric_name, industry)` - Scores individual financial metrics
+
+#### yfinance Data Processing
+- `get_comprehensive_financial_data(symbol)` - Complete financial data extraction
+- `analyze_taiwan_stock_data(symbols)` - Batch analysis of Taiwan stocks
+- `validate_data_quality(stock_data)` - Data quality assessment
+
 #### Visualization
 - `graph_analysis(yf_df, mi_df)` - Creates comparative plots of stock prices vs institutional movements
+- Financial health scoring visualization and reporting
 
 ### Research Methodology
 
@@ -96,16 +125,80 @@ stock_experiment/          # Research notebooks directory
 
 ### Development Workflow
 1. **Research Phase**: Create individual notebooks for market factor hypotheses
-2. **Data Collection**: Use TWSE APIs and yfinance for data gathering  
-3. **Analysis**: Perform correlation analysis and visualization
-4. **Future Automation**: Successful research functions will be moved to automation_scripts
+2. **Data Preprocessing**: Develop and test data collection tools in research_preprocessing/
+3. **Data Collection**: Use TWSE APIs and yfinance for data gathering  
+4. **Analysis**: Perform correlation analysis and visualization
+5. **Modularization**: Extract successful functions into reusable modules
+6. **Future Automation**: Successful research functions will be moved to automation_scripts
 
 ### Planned Automation
 - Daily data updates via cron jobs
 - Automated correlation analysis across multiple stocks
 - Integration with automation_scripts directory (referenced but not yet implemented)
+- Automated financial health scoring for portfolio monitoring
+- Real-time institutional investor movement alerts
+- Multi-factor correlation analysis dashboard
 
 ### Research Languages
 - Primary documentation and analysis are in Traditional Chinese
 - Code comments and function names use English
 - Research findings documented in Chinese within notebooks
+
+## New Components and Tools
+
+### Financial Health Scoring System
+```python
+from company_health_analysis.taiwan_industry_scorer import TaiwanIndustryScorer
+
+# Initialize scorer
+scorer = TaiwanIndustryScorer()
+
+# Calculate health score
+health_metrics = {
+    'revenue_growth_rate': 12.5,
+    'gross_margin': 55.0,
+    'net_margin': 22.0,
+    'roa': 15.0,
+    'roe': 20.0,
+    'eps': 18.5,
+    'eps_growth': 15.0,
+    'debt_ratio': 25.0,
+    'current_ratio': 2.1,
+    'ocf_to_net_income': 1.2
+}
+
+scores = scorer.calculate_industry_score(health_metrics, 'Technology')
+print(f"Total Score: {scores['total_score']:.1f}")
+print(f"Health Grade: {scores['health_grade']}")
+```
+
+### yfinance Taiwan Analysis Tools
+```python
+from research_preprocessing.yfinance_data_preprocessing.yfinance_complete_analysis import get_comprehensive_financial_data
+
+# Get complete financial data for Taiwan stocks
+financial_data = get_comprehensive_financial_data('2330.TW')
+print(f"EPS: {financial_data['eps']}")
+print(f"ROE: {financial_data['roe']}")
+```
+
+### Industry-Specific Configurations
+- **13 Taiwan Industry Sectors**: Technology, Finance, Materials, Industrial, Consumer Cyclical, Consumer Defensive, Healthcare, Utilities, Communication Services, Energy, Real Estate, Transportation, Tourism & Hospitality
+- **Custom Weights**: Each industry has specific weights for Profitability, Per Share metrics, Cash Flow, and Financial Structure
+- **Scoring Standards**: Industry-adjusted benchmarks for financial metrics
+
+### Data Preprocessing Best Practices
+1. **Data Validation**: Always validate data quality before analysis
+2. **Error Handling**: Implement comprehensive error handling for data collection
+3. **Caching**: Use CSV caching for expensive data collection operations
+4. **Documentation**: Document data sources, limitations, and processing steps
+
+### Testing and Quality Assurance
+```python
+# Test Taiwan stock data availability
+from research_preprocessing.yfinance_data_preprocessing.test_taiwan_stocks import test_multiple_stocks
+
+# Test multiple Taiwan stocks
+test_results = test_multiple_stocks(['2330.TW', '2317.TW', '2454.TW'])
+print(f"Success rate: {test_results['success_rate']}")
+```
