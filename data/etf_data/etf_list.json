@@ -1,0 +1,32 @@
+[
+  {
+    "code": "0050",
+    "name": "元大台灣50",
+    "full_code": "0050.TW",
+    "type": "股票型ETF"
+  },
+  {
+    "code": "0056",
+    "name": "元大高股息",
+    "full_code": "0056.TW",
+    "type": "股票型ETF"
+  },
+  {
+    "code": "00878",
+    "name": "國泰永續高股息",
+    "full_code": "00878.TW",
+    "type": "股票型ETF"
+  },
+  {
+    "code": "00881",
+    "name": "國泰台灣5G+",
+    "full_code": "00881.TW",
+    "type": "股票型ETF"
+  },
+  {
+    "code": "00692",
+    "name": "富邦公司治理",
+    "full_code": "00692.TW",
+    "type": "股票型ETF"
+  }
+]

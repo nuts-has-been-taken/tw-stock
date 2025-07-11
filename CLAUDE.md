@@ -59,6 +59,9 @@ tw-stock/
 │   ├── major_investors_movements.ipynb  # ✅ Completed: Institutional investor analysis
 │   ├── JPY_interest.ipynb              # ✅ Completed: JPY interest rate research  
 │   ├── company_health_analysis.ipynb   # ✅ Completed: Financial health scoring
+│   ├── taiwan_etf_analysis.ipynb       # ✅ Completed: ETF constituent analysis
+│   ├── taiwan_etf_scraper.py           # ✅ Completed: ETF data scraper
+│   ├── test_etf_scraper.py             # ✅ Completed: ETF scraper testing
 │   ├── finance_news.ipynb              # 🚧 In progress: News sentiment analysis
 │   ├── unemployment_rate.ipynb         # ❌ Cancelled: Unemployment analysis
 │   └── company_health_analysis/        # Financial scoring system
@@ -73,6 +76,14 @@ tw-stock/
 │   │   ├── test_taiwan_stocks.py             # Quick testing script
 │   │   └── YFINANCE_ANALYSIS_SUMMARY.md      # Analysis summary report
 │   └── README.md
+│
+├── data/                       # Data storage directory
+│   ├── etf_data/              # ETF constituent and weight data
+│   │   ├── etf_list.json           # Taiwan ETF list
+│   │   ├── etf_constituents.json   # ETF constituent details
+│   │   └── all_etf_constituents.csv # Combined ETF data in CSV format
+│   └── mi_movements_csv/       # Major investor movement data
+│
 └── README.md                  # Enhanced project documentation
 ```
 
@@ -98,6 +109,15 @@ tw-stock/
 - `get_comprehensive_financial_data(symbol)` - Complete financial data extraction
 - `analyze_taiwan_stock_data(symbols)` - Batch analysis of Taiwan stocks
 - `validate_data_quality(stock_data)` - Data quality assessment
+
+#### ETF Analysis System
+- `TaiwanETFScraper` - Taiwan ETF data collection and analysis class
+- `get_taiwan_etf_list()` - Retrieves comprehensive Taiwan ETF list
+- `get_etf_constituents_mock(etf_code)` - Gets ETF constituent stocks and weights
+- `collect_all_etf_data(max_etfs, delay)` - Batch collection of ETF data
+- `save_to_csv()` - Saves ETF data to CSV format for analysis
+- `analyze_etf_overlap(etf1, etf2)` - Analyzes overlap between ETFs
+- `calculate_stock_frequency(etf_constituents)` - Stock frequency across ETFs
 
 #### Visualization
 - `graph_analysis(yf_df, mi_df)` - Creates comparative plots of stock prices vs institutional movements
@@ -201,4 +221,79 @@ from research_preprocessing.yfinance_data_preprocessing.test_taiwan_stocks impor
 # Test multiple Taiwan stocks
 test_results = test_multiple_stocks(['2330.TW', '2317.TW', '2454.TW'])
 print(f"Success rate: {test_results['success_rate']}")
+```
+
+### ETF Analysis Usage Examples
+
+#### Basic ETF Data Collection
+```python
+from taiwan_etf_scraper import TaiwanETFScraper
+
+# Initialize ETF scraper
+scraper = TaiwanETFScraper()
+
+# Get Taiwan ETF list
+etf_list = scraper.get_taiwan_etf_list()
+print(f"Found {len(etf_list)} ETFs")
+
+# Collect ETF constituent data
+etf_data = scraper.collect_all_etf_data(max_etfs=10)
+
+# Save to CSV files
+etf_df, all_df = scraper.save_to_csv()
+
+# Print analysis report
+scraper.print_summary_report()
+```
+
+#### ETF Overlap Analysis
+```python
+# Analyze overlap between two ETFs
+def analyze_etf_overlap(etf1_constituents, etf2_constituents):
+    etf1_stocks = {stock['stock_code'] for stock in etf1_constituents}
+    etf2_stocks = {stock['stock_code'] for stock in etf2_constituents}
+    
+    overlap_stocks = etf1_stocks & etf2_stocks
+    overlap_ratio = len(overlap_stocks) / len(etf1_stocks | etf2_stocks)
+    
+    return {
+        'overlap_ratio': overlap_ratio,
+        'overlap_stocks': list(overlap_stocks)
+    }
+
+# Example: Compare 0050 and 0056 overlap
+overlap_result = analyze_etf_overlap(
+    etf_data['0050']['constituents'],
+    etf_data['0056']['constituents']
+)
+print(f"Overlap ratio: {overlap_result['overlap_ratio']:.2%}")
+```
+
+#### Stock Frequency Analysis
+```python
+# Calculate stock frequency across ETFs
+def calculate_stock_frequency(etf_constituents):
+    stock_frequency = {}
+    
+    for etf_code, data in etf_constituents.items():
+        for constituent in data['constituents']:
+            stock_code = constituent['stock_code']
+            if stock_code not in stock_frequency:
+                stock_frequency[stock_code] = {
+                    'name': constituent['stock_name'],
+                    'count': 0,
+                    'total_weight': 0
+                }
+            
+            stock_frequency[stock_code]['count'] += 1
+            stock_frequency[stock_code]['total_weight'] += constituent['weight']
+    
+    return stock_frequency
+
+# Find most popular stocks across ETFs
+stock_freq = calculate_stock_frequency(etf_data)
+popular_stocks = sorted(stock_freq.items(), key=lambda x: x[1]['count'], reverse=True)
+print("Top 5 most frequent stocks:")
+for stock_code, info in popular_stocks[:5]:
+    print(f"  {stock_code} {info['name']}: appears in {info['count']} ETFs")
 ```
